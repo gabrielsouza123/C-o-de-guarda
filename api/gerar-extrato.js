@@ -69,8 +69,9 @@ module.exports = async (req, res) => {
         const itensPorPagina = 5;
         const bancosPorPagina = 2;
         const nomeUsuarioSemEspacos = dados.nomeUsuario.replace(/\s+/g, '_'); // Substitui espaços por '_'
-        const pdfFilePath = path.join(__dirname, '..', 'extratos', `extrato-${nomeUsuarioSemEspacos}-${Date.now()}.pdf`);
-                const merger = new PDFMerger(); // Instância para juntar os PDFs temporários
+        const timestamp = Date.now(); // Usando o mesmo timestamp para gerar a URL e o nome do arquivo
+        const pdfFilePath = path.join(__dirname, '..', 'extratos', `extrato-${nomeUsuarioSemEspacos}-${timestamp}.pdf`);
+        const merger = new PDFMerger(); // Instância para juntar os PDFs temporários
 
         // Quebrar os bancos em grupos de 2
         const gruposDeBancos = [];
@@ -162,11 +163,11 @@ module.exports = async (req, res) => {
                 fs.unlinkSync(path.join(__dirname, '..', 'extratos', file));
             }
         });
-
-        // Retorna o arquivo PDF final
+        
+        // Retorna o arquivo PDF final com a URL real
         res.json({
             message: 'PDF gerado com sucesso!',
-            arquivo: `/extratos/extrato-unico-${Date.now()}.pdf`
+            arquivo: `https://app.chatbank.com.br/extratos/extrato-${nomeUsuarioSemEspacos}-${timestamp}.pdf`
         });
 
     } catch (error) {
