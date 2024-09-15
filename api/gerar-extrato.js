@@ -51,6 +51,8 @@ module.exports = async (req, res) => {
 
     const dados = req.body;  // Dados enviados no corpo da requisição
     const bancos = dados.bancos;  // Bancos vindos da requisição
+    // Verifica se o celular é válido no formato BR
+    const celular = dados.celular.replace(/\D/g, ''); 
 
     // Verifica se o payload está vazio
     if (!dados || !bancos || bancos.length === 0) {
@@ -70,7 +72,17 @@ module.exports = async (req, res) => {
         const bancosPorPagina = 2;
         const nomeUsuarioSemEspacos = dados.nomeUsuario.replace(/\s+/g, '_'); // Substitui espaços por '_'
         const timestamp = Date.now(); // Usando o mesmo timestamp para gerar a URL e o nome do arquivo
-        const pdfFilePath = path.join(__dirname, '..', 'extratos', `extrato-${nomeUsuarioSemEspacos}-${timestamp}.pdf`);
+        
+        // Formatar o nome do arquivo com as datas fornecidas
+        const pdfFileName = `extrato-${nomeUsuarioSemEspacos}-${dados.dataInicio}-${dados.dataFim}.pdf`;
+        
+        // Cria um diretório para o celular do usuário
+        const userDir = path.join(__dirname, '..', 'extratos', celular);
+        if (!fs.existsSync(userDir)) {
+            fs.mkdirSync(userDir, { recursive: true });
+        }
+        
+        const pdfFilePath = path.join(userDir, pdfFileName);
         const merger = new PDFMerger(); // Instância para juntar os PDFs temporários
 
         // Quebrar os bancos em grupos de 2
@@ -132,7 +144,7 @@ module.exports = async (req, res) => {
             await page.setContent(htmlComEstilos);
 
             // Gera o PDF temporário para a página atual
-            const tempPdfPath = path.join(__dirname, '..', 'extratos', `temp-${Date.now()}.pdf`);
+            const tempPdfPath = path.join(userDir, `temp-${Date.now()}.pdf`);
             await page.pdf({
                 path: tempPdfPath,
                 format: 'A4',
@@ -158,16 +170,16 @@ module.exports = async (req, res) => {
         await merger.save(pdfFilePath);
 
         // Limpa os PDFs temporários
-        fs.readdirSync(path.join(__dirname, '..', 'extratos')).forEach(file => {
+        fs.readdirSync(userDir).forEach(file => {
             if (file.startsWith('temp-')) {
-                fs.unlinkSync(path.join(__dirname, '..', 'extratos', file));
+                fs.unlinkSync(path.join(userDir, file));
             }
         });
         
         // Retorna o arquivo PDF final com a URL real
         res.json({
             message: 'PDF gerado com sucesso!',
-            arquivo: `https://app.chatbank.com.br/extratos/extrato-${nomeUsuarioSemEspacos}-${timestamp}.pdf`
+            arquivo: `https://app.chatbank.com.br/extratos/${celular}/${pdfFileName}`
         });
 
     } catch (error) {

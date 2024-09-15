@@ -84,7 +84,7 @@ module.exports = async (req, res) => {
         await browser.close();
 
         // Retorne a URL do comprovante gerado
-        const fileUrl = `${req.protocol}://${req.get('host')}/comprovantes/${fileName}`;
+        const fileUrl = `https://app.chatbank.com.br/comprovantes/${fileName}`;
 
         // Retorna a URL na resposta
         res.json({ url: fileUrl });

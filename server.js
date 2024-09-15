@@ -27,6 +27,9 @@ app.use('/api/gerar-comprovante', require('./api/gerar-comprovante'));
 // Rota da API para gerar o extrato
 app.use('/api/gerar-extrato', require('./api/gerar-extrato'));
 
+// Rota da API para buscar o extrato
+app.use('/api/buscar-extrato', require('./api/buscar-extrato'));
+
 // Inicia o servidor na porta definida pelo ambiente ou 3000 por padrão
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
