@@ -9,7 +9,6 @@ dotenv.config();
 // Token estático para autenticação
 const BEARER_TOKEN = process.env['auth_token'];
 
-
 // Função para formatar a data no formato 00/00/0000
 function formatarData(data) {
     const dataObj = new Date(data);
@@ -17,6 +16,15 @@ function formatarData(data) {
     const mes = String(dataObj.getMonth() + 1).padStart(2, '0'); // Meses começam em 0
     const ano = dataObj.getFullYear();
     return `${dia}/${mes}/${ano}`;
+}
+
+// Função para formatar valores em BRL com 2 casas decimais
+function formatarValorBRL(valor) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+    }).format(valor);
 }
 
 // Função para renderizar o template EJS
@@ -35,7 +43,7 @@ function renderTemplate(app, templateName, data) {
 function validarTransacoes(transacoes) {
     const transacoesValidas = transacoes.filter(transacao => {
         const { data, descricao, valor } = transacao;
-        const isValid = (data && descricao && valor) || (!data && !descricao && !valor);
+        const isValid = (data && descricao && valor !== undefined);  // Verifica se o valor existe
         return isValid;
     });
 
@@ -44,6 +52,15 @@ function validarTransacoes(transacoes) {
         validas: transacoesValidas,
         invalidas: transacoesInvalidas
     };
+}
+
+// Função para dividir um array em blocos menores
+function dividirEmBlocos(array, tamanho) {
+    const blocos = [];
+    for (let i = 0; i < array.length; i += tamanho) {
+        blocos.push(array.slice(i, i + tamanho));
+    }
+    return blocos;
 }
 
 module.exports = async (req, res) => {
@@ -78,8 +95,8 @@ module.exports = async (req, res) => {
         });
 
         const page = await browser.newPage();
-        const itensPorPagina = 5;
-        const bancosPorPagina = 2;
+        const transacoesPorBancoPorPagina = 9;
+        const transacoesPorPagina = 8; // Limite de 9 transações por página
         const nomeUsuarioSemEspacos = dados.nomeUsuario.replace(/\s+/g, '_'); // Substitui espaços por '_'
         const timestamp = Date.now(); // Usando o mesmo timestamp para gerar a URL e o nome do arquivo
         
@@ -95,43 +112,82 @@ module.exports = async (req, res) => {
         const pdfFilePath = path.join(userDir, pdfFileName);
         const merger = new PDFMerger(); // Instância para juntar os PDFs temporários
 
-        // Quebrar os bancos em grupos de 2
-        const gruposDeBancos = [];
-        for (let i = 0; i < bancos.length; i += bancosPorPagina) {
-            gruposDeBancos.push(bancos.slice(i, i + bancosPorPagina));
+        // Processa e divide os bancos e suas transações
+        const bancosProcessados = [];
+
+        for (let banco of bancos) {
+            if (!banco.transacoes || banco.transacoes.length === 0) {
+                return res.status(400).json({
+                    message: `Erro: O banco ${banco.nome} deve conter pelo menos uma transação.`
+                });
+            }
+        
+            const validacao = validarTransacoes(banco.transacoes);
+            banco.transacoes = validacao.validas.map(transacao => {
+                return {
+                    ...transacao,
+                    valor: parseFloat(transacao.valor) || 0  // Garante que 'valor' seja um número
+                };
+            });
+        
+            if (validacao.invalidas > 0) {
+                return res.status(400).json({
+                    message: `Erro: ${validacao.invalidas} transações inválidas encontradas no banco ${banco.nome}.`
+                });
+            }
+        
+            // Dividir as transações em blocos de 4
+            const blocosTransacoes = dividirEmBlocos(banco.transacoes, transacoesPorBancoPorPagina);
+            const totalBanco = banco.transacoes.reduce((acc, transacao) => acc + transacao.valor, 0);
+        
+            // Para cada bloco de transações, criar uma "subconta" para renderização
+            blocosTransacoes.forEach((transacoes, index) => {
+                const subconta = {
+                    nome: banco.nome,
+                    agencia: banco.agencia,
+                    conta: banco.conta,
+                    transacoes: transacoes,
+                    total: formatarValorBRL(totalBanco), // Formata o total em BRL
+                    mostrarTotal: index === blocosTransacoes.length - 1 // Só mostra o total na última subconta
+                };
+                bancosProcessados.push(subconta);
+            });
         }
 
-        // Processa cada grupo de bancos (até 2 bancos por página)
-        for (let grupo of gruposDeBancos) {
-            const bancosValidos = [];
+        // Agrupar as subcontas em páginas com até 9 transações por página
+        const paginas = [];
+        let paginaAtual = [];
+        let transacoesNaPagina = 0;
 
-            // Valida as transações para cada banco do grupo
-            for (let banco of grupo) {
-                if (!banco.transacoes || banco.transacoes.length === 0) {
-                    return res.status(400).json({
-                        message: `Erro: O banco ${banco.nome} deve conter pelo menos uma transação.`
-                    });
-                }
+        for (let banco of bancosProcessados) {
+            // Para cada banco, se o número de transações exceder o limite da página, cria uma nova página
+            const transacoesBanco = banco.transacoes.length;
 
-                const validacao = validarTransacoes(banco.transacoes);
-                banco.transacoes = validacao.validas;
-            
-                if (validacao.invalidas > 0) {
-                    return res.status(400).json({
-                        message: `Erro: ${validacao.invalidas} transações inválidas encontradas no banco ${banco.nome}.`
-                    });
-                }
-
-                bancosValidos.push(banco);
+            if (transacoesNaPagina + transacoesBanco > transacoesPorPagina) {
+                // Adiciona a página atual ao array de páginas e cria uma nova página
+                paginas.push(paginaAtual);
+                paginaAtual = [];
+                transacoesNaPagina = 0;
             }
 
-            // Gera o HTML para a página atual, incluindo até 2 bancos e suas transações paginadas
+            // Adiciona o banco à página atual e incrementa o contador de transações
+            paginaAtual.push(banco);
+            transacoesNaPagina += transacoesBanco;
+        }
+
+        // Adiciona a última página (caso tenha ficado alguma pendente)
+        if (paginaAtual.length > 0) {
+            paginas.push(paginaAtual);
+        }
+
+        // Gera o HTML para cada página e cria PDFs temporários
+        for (let pagina of paginas) {
             const html = await renderTemplate(req.app, 'extrato', {
                 nomeUsuario: dados.nomeUsuario,
                 numeroContas: dados.numeroContas,
                 dataInicio: formatarData(dados.dataInicio),
                 dataFim: formatarData(dados.dataFim), 
-                bancos: bancosValidos
+                bancos: pagina
             });
 
             // Estilos aplicados para ajustar à folha A4
@@ -151,7 +207,7 @@ module.exports = async (req, res) => {
             `;
 
             // Carrega o conteúdo HTML gerado pelo EJS com os estilos aplicados
-            await page.setContent(htmlComEstilos);
+            await page.setContent(htmlComEstilos, { waitUntil: 'networkidle0' });
 
             // Gera o PDF temporário para a página atual
             const tempPdfPath = path.join(userDir, `temp-${Date.now()}.pdf`);

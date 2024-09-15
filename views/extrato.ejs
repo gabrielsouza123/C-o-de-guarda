@@ -277,35 +277,45 @@
 
             <!-- Iteração sobre os bancos e suas transações -->
             <% bancos.forEach(banco => { %>
-            <div class="banco-content">
-                <div class="banco-secao">
-                    <div class="banco-detalhes">Banco: <%= banco.nome %></div>
-                    <div class="conta-detalhes">Agência: <%= banco.agencia %></div>
-                    <div class="conta-detalhes">Conta: <%= banco.conta %></div>
+                <div class="banco-content">
+                    <div class="banco-secao">
+                        <div class="banco-detalhes">Banco: <%= banco.nome %></div>
+                        <div class="conta-detalhes">Agência: <%= banco.agencia %></div>
+                        <div class="conta-detalhes">Conta: <%= banco.conta %></div>
+                    </div>
+            
+                    <!-- Loop das transações em grupos de até 4 -->
+                    <div>
+                        <div class="descricao_valor">
+                            <div class="descricao-header">Descrição</div>
+                            <div class="valor-header">Valor</div>
+                        </div>
+            
+                        <!-- Exibe as transações em grupos de até 4 -->
+                        <% banco.transacoes.forEach(transacoes => { %>
+                        <div class="item-grid">
+                            <div><%= transacoes.descricao %></div>
+                            <div style="width: 100px;">R$ <%= transacoes.valor.toFixed(2).replace('.', ',') %></div>
+                        </div>
+                        <% }) %>
+            
+                        <!-- Exibe o total apenas na última subconta -->
+                        <% if (banco.mostrarTotal) { %>
+                        <div class="item-total">
+                            <%= banco.total.replace('.', ',') %>
+                        </div>
+                        <% } %>
+                    </div>
+            
+                    <% if (banco.isContinuacao) { %>
+                        <div class="continua">Continuação de transações do banco <%= banco.nome %></div>
+                    <% } %>
+            
                 </div>
-
-                <div>
-                    <div class="descricao_valor">
-                        <div class="descricao-header">Descrição</div>
-                        <div class="valor-header">Valor</div>
-                    </div>
-
-                    <!-- Itens de transações em Grid -->
-                    <% banco.transacoes.forEach(transacoes => { %>
-                    <div class="item-grid">
-                        <div><%= transacoes.descricao %></div>
-                        <div style="width: 100px;">R$ <%= transacoes.valor %></div>
-                    </div>
-                    <% }) %>
-
-                    <!-- Total -->
-                    <div class="item-total">
-                        <%= banco.total %>
-                    </div>
-                </div>
-            </div>
+                <!-- Quebra de página para múltiplos grupos de transações -->
+                <div style="page-break-after: always;"></div>
             <% }) %>
-
+            
             <!-- Nota de rodapé -->
             <div class="pink_retangle"></div>
         </div>
