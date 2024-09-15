@@ -295,14 +295,14 @@
                         <% banco.transacoes.forEach(transacoes => { %>
                         <div class="item-grid">
                             <div><%= transacoes.descricao %></div>
-                            <div style="width: 100px;">R$ <%= transacoes.valor.toFixed(2).replace('.', ',') %></div>
+                            <div style="width: 100px;">R$ <%= transacoes.valor.toFixed(2)%></div>
                         </div>
                         <% }) %>
             
                         <!-- Exibe o total apenas na última subconta -->
                         <% if (banco.mostrarTotal) { %>
                         <div class="item-total">
-                            <%= banco.total.replace('.', ',') %>
+                            <%= banco.total %>
                         </div>
                         <% } %>
                     </div>
