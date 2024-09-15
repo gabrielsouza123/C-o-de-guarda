@@ -9,6 +9,16 @@ dotenv.config();
 // Token estático para autenticação
 const BEARER_TOKEN = process.env['auth_token'];
 
+
+// Função para formatar a data no formato 00/00/0000
+function formatarData(data) {
+    const dataObj = new Date(data);
+    const dia = String(dataObj.getDate()).padStart(2, '0');
+    const mes = String(dataObj.getMonth() + 1).padStart(2, '0'); // Meses começam em 0
+    const ano = dataObj.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+}
+
 // Função para renderizar o template EJS
 function renderTemplate(app, templateName, data) {
     return new Promise((resolve, reject) => {
@@ -119,8 +129,8 @@ module.exports = async (req, res) => {
             const html = await renderTemplate(req.app, 'extrato', {
                 nomeUsuario: dados.nomeUsuario,
                 numeroContas: dados.numeroContas,
-                dataInicio: dados.dataInicio,
-                dataFim: dados.dataFim,
+                dataInicio: formatarData(dados.dataInicio),
+                dataFim: formatarData(dados.dataFim), 
                 bancos: bancosValidos
             });
 

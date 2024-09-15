@@ -266,11 +266,11 @@
             <div class="detalhes">
                 <div class="esquerda">
                     <div class="nome-usuario"><%= nomeUsuario %></div>
-                    <div class="conta-vinculada">Atualmente você possui 2 contas vinculadas ao ChatBank.</div>
+                    <div class="conta-vinculada">Atualmente você possui <%= numeroContas %> contas vinculadas ao ChatBank.</div>
                 </div>
                 <div class="periodo">
-                    <div style="display: flex;">de: <span class="data_periodo" style="margin-left: 8px;">01/08/24</span></div>
-                    <div style="display: flex;">até: <span class="data_periodo" style="margin-left: 8px;">01/08/24</span></div>
+                    <div style="display: flex;">de: <span class="data_periodo" style="margin-left: 8px;"><%= dataInicio %></span></div>
+                    <div style="display: flex;">até: <span class="data_periodo" style="margin-left: 8px;"><%= dataFim %></span></div>
                 </div>
             </div>
             <div class="gray_line"></div>
