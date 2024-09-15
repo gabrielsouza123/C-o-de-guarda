@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extrato</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FFFFFF;
+            color: #171717;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .extrato-wrapper {
+            background-color: #FFFFFF;
+            width: 100%;
+            max-width: 250mm;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: bold;
+            color: #171717;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: bold;
+            color: #171717;
+            margin-bottom: 16px;
+        }
+
+        .detalhes {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .nome-usuario {
+            font-weight: 700;
+            font-size: 25px;
+            color: #171717;
+            margin-top: 5px;
+        }
+
+        .nome-usuario,
+        .conta-vinculada {
+            display: block;
+        }
+
+        .periodo {
+            text-align: right;
+            font-size: 12px;
+            flex-direction: row;
+            margin-top: 5px;
+        }
+
+        .periodo div {
+            margin-bottom: 5px;
+        }
+
+        .banco-secao {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            gap: 8px;
+        }
+
+        .banco-content {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .descricao_valor {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 10px;
+            justify-content: end;
+            width: 100%;
+        }
+
+        .descricao-header {
+            background-color: #171717;
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            height: 20px;
+            text-align: left;
+        }
+
+        .valor-header {
+            background-color: #171717;
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            width: 100px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            height: 20px;
+            margin-top: 8px;
+        }
+
+        .item-grid div {
+            padding: 10px;
+            background-color: #F9F9F9;
+            border-radius: 8px;
+        }
+
+        .item-total {
+            font-weight: bold;
+            font-size: 14px;
+            padding: 10px;
+            background-color: #171717;
+            color: white;
+            border-radius: 12px;
+            margin-top: 16px;
+            width: 100px;
+            text-align: right;
+            grid-column: span 2;
+            margin-left: auto;
+        }
+
+        .valor-total {
+            font-size: 14px;
+            font-weight: bold;
+            color: #171717;
+        }
+
+        .nota-footer {
+            background-color: #EFEFEF;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 8px;
+            color: #757575;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .yellow_line {
+            flex-grow: 1;
+            height: 4px;
+            background-color: #FFE500;
+            margin-bottom: 25px;
+        }
+
+        .gray_line {
+            flex-grow: 1;
+            height: 2px;
+            background-color: #F1F1F1;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .coluna_logo {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            width: 100%;
+            gap: 8px;
+        }
+
+        .logo img {
+            height: 30px;
+            margin-left: 10px;
+        }
+
+        .line {
+            width: 100%;
+            height: 8px;
+            background-color: #E4BCFD;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .conta-vinculada {
+            border: 1px solid #E3B8FF;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 10px;
+            color: #4a4a4a;
+            margin-top: 8px;
+        }
+
+        .data_periodo {
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .banco-detalhes {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .conta-detalhes {
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="extrato-wrapper">
+        <div class="header">
+            <div class="row">
+                <h1>Extrato</h1>
+                <div class="coluna_logo">
+                    <div class="logo">
+                        <img src="https://firebasestorage.googleapis.com/v0/b/chatbank-1c4a6.appspot.com/o/Group%205.png?alt=media&token=3063d92b-f7c3-4f2d-9cd9-c4edd83616f7" alt="Logo chatbank">
+                    </div>
+                    <div class="line"></div>
+                </div>
+            </div>
+            <div class="yellow_line"></div>
+
+            <div class="detalhes">
+                <div class="esquerda">
+                    <div class="nome-usuario">Diego Paraizo</div>
+                    <div class="conta-vinculada">Atualmente você possui 2 contas vinculadas ao ChatBank.</div>
+                </div>
+                <div class="periodo">
+                    <div style="display: flex;">de: <span class="data_periodo" style="margin-left: 8px;">01/08/24</span></div>
+                    <div style="display: flex;">até: <span class="data_periodo" style="margin-left: 8px;">01/08/24</span></div>
+                </div>
+            </div>
+            <div class="gray_line"></div>
+
+            <!-- Iteração sobre os bancos e suas transações -->
+            <% bancos.forEach(banco => { %>
+            <div class="banco-content">
+                <div class="banco-secao">
+                    <div class="banco-detalhes">Banco: <%= banco.nome %></div>
+                    <div class="conta-detalhes">Agência: <%= banco.agencia %></div>
+                    <div class="conta-detalhes">Conta: <%= banco.conta %></div>
+                </div>
+
+                <div>
+                    <div class="descricao_valor">
+                        <div class="descricao-header">Descrição</div>
+                        <div class="valor-header">Valor</div>
+                    </div>
+
+                    <!-- Itens de transações em Grid -->
+                    <% banco.transacoes.forEach(transacao => { %>
+                    <div class="item-grid">
+                        <div><%= transacao.descricao %></div>
+                        <div style="width: 100px;">R$ <%= transacao.valor %></div>
+                    </div>
+                    <% }) %>
+
+                    <!-- Total -->
+                    <div class="item-total">
+                        Total: R$ <%= banco.total %>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+
+            <!-- Nota de rodapé -->
+            <div class="nota-footer">
+                A autenticação pode ser verificada em consulta aos canais oficiais do ChatBank.
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprovante de Pagamento</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fff;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .comprovante-wrapper {
+            padding: 24px;
+            background-color: #fff; /* Fundo branco */
+            display: inline-block;
+        }
+
+        span {
+            font-size: 14px;
+        }
+
+        .titulo_comprovante {
+            font-size: 16px;
+            font-weight: 300;
+            color: #fff;
+            text-align: left;
+        }
+
+        .comprovante-container {
+            background-color: #171717;
+            padding: 20px;
+            width: 320px; /* Aumentado para permitir mais espaço para conteúdo */
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            word-wrap: break-word; /* Permite que palavras grandes quebrem */
+        }
+
+        .logo img {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #b3b3b3;
+        }
+
+        .detalhes-pagamento {
+            display: flex;
+            justify-content: left;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .detalhes-pagamento img {
+            width: 20px;
+            margin-right: 5px;
+        }
+
+        .detalhes-pagamento div {
+            display: flex;
+            align-items: center;
+        }
+
+        .detalhes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .label {
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .valor_detalhe {
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .detalhes-pagamento .valor {
+            font-size: 14;
+            font-weight: 400;
+            color: #fff;
+        }
+
+        .info {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .info p {
+            margin: 3px 0;
+            font-size: 14px;
+        }
+
+        .transacao-id {
+            padding-top: 10px;
+            text-align: left;
+            font-size: 8px;
+            color: #fff;
+        }
+
+        .transacao-id p {
+            font-size: 10px;
+            color: #fff;
+        }
+
+        .data_transacao {
+            font-size: 10px;
+            color: #fff;
+            text-align: left;
+        }
+
+        /* Efeito serrilhado na parte inferior */
+        .comprovante-container::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            bottom: -5px;
+            left: 0;
+            background-color: #171717;
+            background-image: radial-gradient(circle at bottom, #fff 9px, transparent 10px);
+            background-size: 30px 20px; /* 20px para o tamanho do círculo, 8px de espaço */
+            background-repeat: repeat-x;
+            background-position: center;
+        }
+
+        /* Borda superior arredondada */
+        .comprovante-container {
+            border-radius: 20px 20px 0 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="comprovante-wrapper">
+        <div class="comprovante-container">
+            <!-- Logo -->
+            <div class="logo">
+                <img src="https://firebasestorage.googleapis.com/v0/b/live-ffcatalogo-pronto-lkjzp8.appspot.com/o/logo.png?alt=media&token=943c82b5-08b4-4730-aa94-8b7012008ab4" alt="Chatbank Logo">
+            </div>
+
+            <!-- Detalhes do pagamento -->
+            <h1 class="titulo_comprovante">Comprovante de pagamento</h1>
+            <p class="data_transacao"><%= dataTransacao %></p>
+            <div class="detalhes-pagamento">
+                <div>
+                    <img src="https://firebasestorage.googleapis.com/v0/b/live-ffcatalogo-pronto-lkjzp8.appspot.com/o/pix.png?alt=media&token=7dcb9008-e139-4b9b-949c-30c42fb8d3da" alt="Pix">
+                    <span>Pix</span>
+                </div>
+                <div>
+                    <img src="https://firebasestorage.googleapis.com/v0/b/live-ffcatalogo-pronto-lkjzp8.appspot.com/o/check.png?alt=media&token=f5fe7c60-679f-438c-bf59-4416575565ac" alt="Check">
+                    <span class="valor"><%= valor %></span>
+                </div>
+            </div>
+
+            <!-- Informações do emissor -->
+            <div class="info">
+                <p class="title">DE</p>
+                <p style="font-size: 14px!important;"><%= nomeEmissor %></p>
+                <div class="detalhes">
+                    <p class="label">Documento:</p> 
+                    <p class="valor_detalhe" style="font-size: 12px!important;"><%= documentoEmissor %></p>
+                </div>            
+                <div class="detalhes">
+                    <p class="label">Banco:</p> 
+                    <p class="valor_detalhe" style="font-size: 12px!important;"><%= bancoEmissor %></p>
+                </div>         
+                <div class="detalhes">
+                    <p class="label">Agência:</p> 
+                    <p class="valor_detalhe" style="font-size: 12px!important;"><%= agenciaEmissor %></p>
+                </div>         
+                <div class="detalhes">
+                    <p class="label">Conta:</p> 
+                    <p class="valor_detalhe" style="font-size: 12px!important;"><%= contaEmissor %></p>
+                </div>         
+            </div>
+
+            <!-- Informações do receptor -->
+            <div class="info">
+                <p class="title">PARA</p>
+                <p style="font-size: 14px!important;"><%= nomeReceptor %></p>
+                <div class="detalhes">
+                    <p class="label">Documento:</p> 
+                    <p class="valor_detalhe" style="font-size: 12px!important;"><%= documentoReceptor %></p>
+                </div>            
+                <div class="detalhes">
+                    <p class="label">Banco:</p> 
+                    <p class="valor_detalhe" style="font-size: 12px!important;"><%= bancoReceptor %></p>
+                </div>         
+                <div class="detalhes">
+                    <p class="label">Agência:</p> 
+                    <p class="valor_detalhe" style="font-size: 12px!important;"><%= agenciaReceptor %></p>
+                </div>         
+                <div class="detalhes">
+                    <p class="label">Conta:</p> 
+                    <p class="valor_detalhe" style="font-size: 12px!important;"><%= contaReceptor %></p>
+                </div>         
+            </div>
+
+            <!-- ID da transação -->
+            <div class="transacao-id">
+                <p>ID/TRANSAÇÃO: <%= transacaoId %></p>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll('img').forEach(img => {
+            img.onerror = () => {
+                console.error(`Erro ao carregar a imagem: ${img.src}`);
+            };
+        });
+    </script>
+</body>
+</html>
