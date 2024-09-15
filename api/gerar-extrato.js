@@ -64,24 +64,19 @@ function dividirEmBlocos(array, tamanho) {
 }
 
 module.exports = async (req, res) => {
-    // Importação dinâmica do `pdf-merger-js`
     const PDFMerger = (await import('pdf-merger-js')).default;
 
-    // Verificação do token de autorização
     const authHeader = req.headers['authorization'];
-    
     if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.split(' ')[1] !== BEARER_TOKEN) {
         return res.status(401).json({
             message: "Erro: Token inválido ou ausente."
         });
     }
 
-    const dados = req.body;  // Dados enviados no corpo da requisição
-    const bancos = dados.bancos;  // Bancos vindos da requisição
-    // Verifica se o celular é válido no formato BR
-    const celular = dados.celular.replace(/\D/g, ''); 
+    const dados = req.body;
+    const bancos = dados.bancos;
+    const celular = dados.celular.replace(/\D/g, '');
 
-    // Verifica se o payload está vazio
     if (!dados || !bancos || bancos.length === 0) {
         return res.status(400).json({
             message: "Erro: O payload não pode estar vazio. Pelo menos um banco com transações deve ser enviado."
@@ -95,24 +90,20 @@ module.exports = async (req, res) => {
         });
 
         const page = await browser.newPage();
-        const transacoesPorBancoPorPagina = 9;
-        const transacoesPorPagina = 8; // Limite de 9 transações por página
-        const nomeUsuarioSemEspacos = dados.nomeUsuario.replace(/\s+/g, '_'); // Substitui espaços por '_'
-        const timestamp = Date.now(); // Usando o mesmo timestamp para gerar a URL e o nome do arquivo
-        
-        // Formatar o nome do arquivo com as datas fornecidas
+        const transacoesPorBancoPorPagina = 6; // Ajustado para até 6 transações por bloco
+        const transacoesPorPagina = 6; // Limite de 6 transações por página
+        const nomeUsuarioSemEspacos = dados.nomeUsuario.replace(/\s+/g, '_');
+        const timestamp = Date.now();
         const pdfFileName = `extrato-${nomeUsuarioSemEspacos}-${dados.dataInicio}-${dados.dataFim}.pdf`;
-        
-        // Cria um diretório para o celular do usuário
+
         const userDir = path.join(__dirname, '..', 'extratos', celular);
         if (!fs.existsSync(userDir)) {
             fs.mkdirSync(userDir, { recursive: true });
         }
-        
-        const pdfFilePath = path.join(userDir, pdfFileName);
-        const merger = new PDFMerger(); // Instância para juntar os PDFs temporários
 
-        // Processa e divide os bancos e suas transações
+        const pdfFilePath = path.join(userDir, pdfFileName);
+        const merger = new PDFMerger();
+
         const bancosProcessados = [];
 
         for (let banco of bancos) {
@@ -121,7 +112,7 @@ module.exports = async (req, res) => {
                     message: `Erro: O banco ${banco.nome} deve conter pelo menos uma transação.`
                 });
             }
-        
+
             const validacao = validarTransacoes(banco.transacoes);
             banco.transacoes = validacao.validas.map(transacao => {
                 return {
@@ -129,17 +120,17 @@ module.exports = async (req, res) => {
                     valor: parseFloat(transacao.valor) || 0  // Garante que 'valor' seja um número
                 };
             });
-        
+
             if (validacao.invalidas > 0) {
                 return res.status(400).json({
                     message: `Erro: ${validacao.invalidas} transações inválidas encontradas no banco ${banco.nome}.`
                 });
             }
-        
-            // Dividir as transações em blocos de 4
+
+            // Dividir as transações em blocos de 6
             const blocosTransacoes = dividirEmBlocos(banco.transacoes, transacoesPorBancoPorPagina);
             const totalBanco = banco.transacoes.reduce((acc, transacao) => acc + transacao.valor, 0);
-        
+
             // Para cada bloco de transações, criar uma "subconta" para renderização
             blocosTransacoes.forEach((transacoes, index) => {
                 const subconta = {
@@ -147,40 +138,35 @@ module.exports = async (req, res) => {
                     agencia: banco.agencia,
                     conta: banco.conta,
                     transacoes: transacoes,
-                    total: formatarValorBRL(totalBanco), // Formata o total em BRL
-                    mostrarTotal: index === blocosTransacoes.length - 1 // Só mostra o total na última subconta
+                    total: formatarValorBRL(totalBanco),
+                    mostrarTotal: index === blocosTransacoes.length - 1,
+                    isContinuacao: index > 0  // Marca como continuação se não for o primeiro bloco
                 };
                 bancosProcessados.push(subconta);
             });
         }
 
-        // Agrupar as subcontas em páginas com até 9 transações por página
         const paginas = [];
         let paginaAtual = [];
         let transacoesNaPagina = 0;
 
         for (let banco of bancosProcessados) {
-            // Para cada banco, se o número de transações exceder o limite da página, cria uma nova página
             const transacoesBanco = banco.transacoes.length;
 
             if (transacoesNaPagina + transacoesBanco > transacoesPorPagina) {
-                // Adiciona a página atual ao array de páginas e cria uma nova página
                 paginas.push(paginaAtual);
                 paginaAtual = [];
                 transacoesNaPagina = 0;
             }
 
-            // Adiciona o banco à página atual e incrementa o contador de transações
             paginaAtual.push(banco);
             transacoesNaPagina += transacoesBanco;
         }
 
-        // Adiciona a última página (caso tenha ficado alguma pendente)
         if (paginaAtual.length > 0) {
             paginas.push(paginaAtual);
         }
 
-        // Gera o HTML para cada página e cria PDFs temporários
         for (let pagina of paginas) {
             const html = await renderTemplate(req.app, 'extrato', {
                 nomeUsuario: dados.nomeUsuario,
@@ -190,7 +176,6 @@ module.exports = async (req, res) => {
                 bancos: pagina
             });
 
-            // Estilos aplicados para ajustar à folha A4
             const htmlComEstilos = `
                 <style>
                     .content {
@@ -206,10 +191,8 @@ module.exports = async (req, res) => {
                 </div>
             `;
 
-            // Carrega o conteúdo HTML gerado pelo EJS com os estilos aplicados
             await page.setContent(htmlComEstilos, { waitUntil: 'networkidle0' });
 
-            // Gera o PDF temporário para a página atual
             const tempPdfPath = path.join(userDir, `temp-${Date.now()}.pdf`);
             await page.pdf({
                 path: tempPdfPath,
@@ -225,24 +208,18 @@ module.exports = async (req, res) => {
                 height: '297mm'
             });
 
-            // Adiciona o PDF temporário ao merger
             merger.add(tempPdfPath);
         }
 
-        // Fecha o navegador
         await browser.close();
-
-        // Junta todos os PDFs temporários em um único arquivo
         await merger.save(pdfFilePath);
 
-        // Limpa os PDFs temporários
         fs.readdirSync(userDir).forEach(file => {
             if (file.startsWith('temp-')) {
                 fs.unlinkSync(path.join(userDir, file));
             }
         });
-        
-        // Retorna o arquivo PDF final com a URL real
+
         res.json({
             message: 'PDF gerado com sucesso!',
             arquivo: `https://app.chatbank.com.br/extratos/${celular}/${pdfFileName}`

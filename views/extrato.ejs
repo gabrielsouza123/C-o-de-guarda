@@ -273,10 +273,14 @@
                     <div style="display: flex;">até: <span class="data_periodo" style="margin-left: 8px;"><%= dataFim %></span></div>
                 </div>
             </div>
+            <% bancos.forEach(banco => { %>
+                <% if (banco.isContinuacao) { %>
+                    <div class="continua">Continuação de transações do banco <%= banco.nome %></div>
+                <% } %>
             <div class="gray_line"></div>
 
             <!-- Iteração sobre os bancos e suas transações -->
-            <% bancos.forEach(banco => { %>
+
                 <div class="banco-content">
                     <div class="banco-secao">
                         <div class="banco-detalhes">Banco: <%= banco.nome %></div>
@@ -306,10 +310,6 @@
                         </div>
                         <% } %>
                     </div>
-            
-                    <% if (banco.isContinuacao) { %>
-                        <div class="continua">Continuação de transações do banco <%= banco.nome %></div>
-                    <% } %>
             
                 </div>
                 <!-- Quebra de página para múltiplos grupos de transações -->
