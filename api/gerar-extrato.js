@@ -68,8 +68,9 @@ module.exports = async (req, res) => {
         const page = await browser.newPage();
         const itensPorPagina = 5;
         const bancosPorPagina = 2;
-        const pdfFilePath = path.join(__dirname, '..', 'extratos', `extrato-${dados.nomeUsuario}-${Date.now()}.pdf`);
-        const merger = new PDFMerger(); // Instância para juntar os PDFs temporários
+        const nomeUsuarioSemEspacos = dados.nomeUsuario.replace(/\s+/g, '_'); // Substitui espaços por '_'
+        const pdfFilePath = path.join(__dirname, '..', 'extratos', `extrato-${nomeUsuarioSemEspacos}-${Date.now()}.pdf`);
+                const merger = new PDFMerger(); // Instância para juntar os PDFs temporários
 
         // Quebrar os bancos em grupos de 2
         const gruposDeBancos = [];
